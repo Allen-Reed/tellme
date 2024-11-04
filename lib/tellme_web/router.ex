@@ -19,8 +19,6 @@ defmodule TellmeWeb.Router do
 
   scope "/", TellmeWeb do
     pipe_through :browser
-
-
   end
 
   # Other scopes may use custom stacks.
@@ -51,6 +49,7 @@ defmodule TellmeWeb.Router do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     get "/", PageController, :home
+
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{TellmeWeb.UserAuth, :redirect_if_user_is_authenticated}] do
       live "/users/register", UserRegistrationLive, :new
