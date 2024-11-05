@@ -7,24 +7,25 @@ defmodule TellmeWeb.HomeLive do
   @impl true
   def render(%{loading: true} = assigns) do
     ~H"""
-    Loading up...
+    <div class="text-white">Loading up...</div>
     """
   end
 
   def render(assigns) do
     ~H"""
-    <h1 class="text-2xl">Feed</h1>
-    <.button type="button" phx-click={show_modal("new-post-modal")}>New Post</.button>
 
+    <div class="flex justify-center mb-4">
+    <.button type="button" class="w-1/3 bg-[#8200ff]" phx-click={show_modal("new-post-modal")}>New Tell 🔥</.button>
+    </div>
     <div id="feed" phx-update="stream" class="flex flex-col gap-2">
       <div
         :for={{dom_id, post} <- @streams.posts}
         id={dom_id}
-        class="w-1/2 mx-auto flex flex-col gap-2 p-4 border rounded"
+        class="w-[99%] mx-auto flex flex-col gap-2 p-4 border rounded bg-white"
       >
         <img src={post.image_path} />
-        <p><%= post.user.email %></p>
-        <p><%= post.caption %></p>
+        <p class="text-[#8200ff]"><%= post.user.email %></p>
+        <p class="text-2xl"><%= post.caption %></p>
       </div>
     </div>
 
