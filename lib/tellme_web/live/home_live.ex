@@ -21,7 +21,7 @@ defmodule TellmeWeb.HomeLive do
       <div
         :for={{dom_id, post} <- @streams.posts}
         id={dom_id}
-        class="w-[99%] mx-auto flex flex-col gap-2 p-4 border rounded bg-white"
+        class="w-3/4 mx-auto flex flex-col gap-2 p-4 border rounded bg-white"
       >
         <img src={post.image_path} />
         <p class="text-[#8200ff]"><%= post.user.email %></p>
