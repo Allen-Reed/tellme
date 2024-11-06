@@ -13,23 +13,42 @@ defmodule TellmeWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
   scope "/", TellmeWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through :browser
+  end
 
-    # Redirect authenticated users from `/` to `/home`
-    get "/", RedirectController, :redirect_to_home
+  # Other scopes may use custom stacks.
+  # scope "/api", TellmeWeb do
+  #   pipe_through :api
+  # end
 
-    live_session :require_authenticated_user,
-      on_mount: [{TellmeWeb.UserAuth, :ensure_authenticated}] do
-      live "/home", HomeLive, :index
-      live "/users/settings", UserSettingsLive, :edit
-      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+  # Enable LiveDashboard and Swoosh mailbox preview in development
+  if Application.compile_env(:tellme, :dev_routes) do
+    # If you want to use the LiveDashboard in production, you should put
+    # it behind authentication and allow only admins to access it.
+    # If your application does not have an admins-only section yet,
+    # you can use Plug.BasicAuth to set up some basic authentication
+    # as long as you are also using SSL (which you should anyway).
+    import Phoenix.LiveDashboard.Router
+
+    scope "/dev" do
+      pipe_through :browser
+
+      live_dashboard "/dashboard", metrics: TellmeWeb.Telemetry
+      forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
 
-  # Authentication routes for registration and login
+  ## Authentication routes
+
   scope "/", TellmeWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    get "/", PageController, :home
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{TellmeWeb.UserAuth, :redirect_if_user_is_authenticated}] do
@@ -42,7 +61,17 @@ defmodule TellmeWeb.Router do
     post "/users/log_in", UserSessionController, :create
   end
 
-  # Logout and confirmation routes
+  scope "/", TellmeWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_user,
+      on_mount: [{TellmeWeb.UserAuth, :ensure_authenticated}] do
+      live "/home", HomeLive, :index
+      live "/users/settings", UserSettingsLive, :edit
+      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+    end
+  end
+
   scope "/", TellmeWeb do
     pipe_through [:browser]
 
@@ -52,18 +81,6 @@ defmodule TellmeWeb.Router do
       on_mount: [{TellmeWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
-    end
-  end
-
-  # Development-only routes
-  if Application.compile_env(:tellme, :dev_routes) do
-    import Phoenix.LiveDashboard.Router
-
-    scope "/dev" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: TellmeWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
 end
